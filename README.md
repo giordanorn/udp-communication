@@ -21,7 +21,13 @@ You need to run an instance of `udpserver` to start listening to messages. You c
 ./udpserver
 ```
 
-After this, you might send messages
+After this, you might be able to receive messages.
+
+### udpclient
+This command sends message to a udpserver with its ip address.
+```sh
+./udpclient <IPADDRESS> <message1> <message2> ... <messageN>
+```
 
 ### What it does
 `udpserver` runs a instance of a udp server and wait for messages from a udp client.
