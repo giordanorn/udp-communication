@@ -66,6 +66,7 @@ public class ClientConnection {
 							client.setName(receivedMessage);
 							server.broadcastMessageToAlmostAllClients(client.getName() + " entrou na sala.",
 									client.getAddress());
+							System.out.println(client.getName() + " entrou na sala");
 						}
 					}
 
@@ -77,6 +78,7 @@ public class ClientConnection {
 					else {
 						server.broadcastMessageToAlmostAllClients(client.getName() + " disse: " + receivedMessage,
 								null);
+						System.out.println(client.getName() + " disse: " + receivedMessage);
 					}
 				}
 			}
