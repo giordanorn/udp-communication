@@ -8,11 +8,12 @@ parser.add_argument("port", help="the port in which the server will run",
 args = parser.parse_args()
 
 class ClientConn:
-    def __init__(self, server, conn, addr):
+    def __init__(self, server, conn, addr, lock):
         self.server = server
         self.conn = conn
         self.addr = addr
         self.name = ""
+        self.lock = lock
         t = threading.Thread(target=self.listen_to_messages)
         t.start()
 
@@ -33,10 +34,14 @@ class ClientConn:
 
                 else:
                     self.name = decoded_msg
+                    lock.acquire()
                     self.server.send_to_almost_all(self.name + " entrou na sala", self.addr)
+                    lock.release()
 
             elif decoded_msg == 'sair':
+                lock.acquire()
                 self.server.send_to_almost_all(self.name + " saiu da sala", self.addr)                
+                lock.release()
                 self.exit()
 
             else:
@@ -55,7 +60,7 @@ class Server:
         self.clients[addr] = client
 
     def send_to_almost_all(self, msg, client_not_to_send):
-        for client_addr, client in self.clients.items():
+        for client_addr, client in list(self.clients.items()):
             if client_addr == client_not_to_send:
                 continue
 
@@ -63,15 +68,16 @@ class Server:
 
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-host = "127.0.0.1"    
-port = args.port                              
+host = "10.7.102.4"    
+port = args.port
+lock = threading.Lock()                              
 
 server = Server(host, port)
 
 sock.bind((host, port))                                  
-sock.listen(5)                                           
+sock.listen(10)                                           
 
 while True:
     conn, addr = sock.accept()
-    client = ClientConn(server, conn, addr[0])
+    client = ClientConn(server, conn, addr[0], lock)
     server.add_client(addr, client)
