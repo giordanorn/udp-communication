@@ -25,7 +25,12 @@ class ClientConn:
 
     def listen_to_messages(self):
         while True:
-            msg = self.conn.recv(1024)
+            try:
+                msg = self.conn.recv(1024)
+            except socket.error:
+                self.exit()
+                break
+
             decoded_msg = msg.decode('ascii')
 
             if not self.name:
@@ -39,15 +44,17 @@ class ClientConn:
                     lock.release()
 
             elif decoded_msg == 'sair':
-                lock.acquire()
-                self.server.send_to_almost_all(self.name + " saiu da sala", self.addr)                
-                lock.release()
                 self.exit()
+                break
 
             else:
-                self.server.send_to_almost_all(self.name + " disse: " + decoded_msg, self.addr)                
+                self.server.send_to_almost_all(self.name + " disse: " + decoded_msg, None)                
 
     def exit(self):
+        lock.acquire()
+        self.server.remove_client(self.addr)
+        self.server.send_to_almost_all(self.name + " saiu da sala", self.addr)                
+        lock.release()
         self.conn.close()
 
 class Server:
@@ -58,6 +65,9 @@ class Server:
 
     def add_client(self, addr, client):
         self.clients[addr] = client
+
+    def remove_client(self, addr):
+        del self.clients[addr]
 
     def send_to_almost_all(self, msg, client_not_to_send):
         for client_addr, client in list(self.clients.items()):
@@ -79,5 +89,5 @@ sock.listen(10)
 
 while True:
     conn, addr = sock.accept()
-    client = ClientConn(server, conn, addr[0], lock)
+    client = ClientConn(server, conn, addr, lock)
     server.add_client(addr, client)
