@@ -52,12 +52,14 @@ public class Server {
 	
 	private void waitsForNewConnection() throws IOException {
 		Socket clientSocket = serverSocket.accept();
+		System.out.println("A NEW CLIENT HAS CONNECTED TO THE SERVER");
 		initNewConnection(clientSocket);
 	}
 	
 	private void initNewConnection(Socket clientSocket) throws IOException {
 		ClientConnection conn = new ClientConnection(clientSocket, this);
 		clients.put(conn.getClientAddress(), conn);
+		System.out.println("THE CLIENT WAS ADDED TO THE LIST OF CLIENTS");
 		conn.start();
 	}
 	
