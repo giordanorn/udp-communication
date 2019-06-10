@@ -58,9 +58,7 @@ class ClientConn:
         self.conn.close()
 
 class Server:
-    def __init__(self, addr, port):
-        self.addr = addr
-        self.port = port
+    def __init__(self):
         self.clients = {}
 
     def add_client(self, addr, client):
@@ -78,11 +76,12 @@ class Server:
 
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-host = "10.7.102.4"    
+#host = socket.gethostbyname(socket.gethostname())   
+host = ''
 port = args.port
 lock = threading.Lock()                              
 
-server = Server(host, port)
+server = Server()
 
 sock.bind((host, port))                                  
 sock.listen(10)                                           

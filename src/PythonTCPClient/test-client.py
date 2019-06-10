@@ -3,7 +3,7 @@ import threading
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("host", help="the address of the server")
+parser.add_argument("server_address", help="the address of the server")
 parser.add_argument("port", help="the port of the server", type = int)
 parser.add_argument("nick", help="your nickname")
 args = parser.parse_args()
@@ -12,7 +12,7 @@ args = parser.parse_args()
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 
-host = args.host                           
+host = args.server_address                           
 port = args.port
 
 sock.connect((host, port)) 
