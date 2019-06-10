@@ -18,16 +18,36 @@ port = args.port
 sock.connect((host, port)) 
 sock.send(args.nick.encode('ascii'))
 
+lock = threading.Lock()
+
 def recv(sock):
     while True:
-         data = sock.recv(1024)
-         data = data.decode('ascii')
-         print(data)
+        try:
+            lock.acquire()
+            data = sock.recv(1024)
+            data = data.decode('ascii')
+            print(data)
+        except socket.error:
+            socket.close()
+            break
+        finally:
+            lock.release()
 
 threading.Thread(target=recv, args=(sock,)).start()
 
 while True:
     msg = input()
-    sock.send(msg.encode('ascii'))
+    lock.acquire()
+
+    try:
+        sock.send(msg.encode('ascii'))
+
+    except socket.error:
+        sock.close()
+        lock.release()
+        break
+
+    lock.release()
+
     if(msg == "sair"):
         sock.close()
