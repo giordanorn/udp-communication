@@ -54,9 +54,7 @@ public class ClientConnection {
 			try {
 				this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 				String receivedMessage;
-				System.out.println("WAITING FOR A CLIENT'S MESSAGE");
 				while ((receivedMessage = in.readLine()) != null) {
-					System.out.println("A MESSAGE FROM THE CLIENT WAS RECEIVED");
 					if (!client.hasName()) {
 						if (!server.isNameAvailable(receivedMessage, client.getAddress())) {
 							sendMessage("ja tem ume amiguinhe com esse nome. please choose another one.");
@@ -71,6 +69,8 @@ public class ClientConnection {
 					}
 
 					else if (receivedMessage.equals("sair")) {
+						server.broadcastMessageToAlmostAllClients(client.getName() + " saiu da sala.",
+								client.getAddress());
 						closeConnection();
 						break;
 					}
