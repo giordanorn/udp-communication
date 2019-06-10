@@ -64,13 +64,14 @@ public class ClientConnection {
 							client.setName(receivedMessage);
 							server.broadcastMessageToAlmostAllClients(client.getName() + " entrou na sala.",
 									client.getAddress());
-							System.out.println(client.getName() + " entrou na sala");
+						//	System.out.println(client.getName() + " entrou na sala");
 						}
 					}
 
 					else if (receivedMessage.equals("sair")) {
 						server.broadcastMessageToAlmostAllClients(client.getName() + " saiu da sala.",
 								client.getAddress());
+					//	System.out.println(client.getName() + " saiu da sala.");
 						closeConnection();
 						break;
 					}
@@ -78,7 +79,7 @@ public class ClientConnection {
 					else {
 						server.broadcastMessageToAlmostAllClients(client.getName() + " disse: " + receivedMessage,
 								null);
-						System.out.println(client.getName() + " disse: " + receivedMessage);
+					//	System.out.println(client.getName() + " disse: " + receivedMessage);
 					}
 				}
 			}
