@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class Client {
 	private String name;
@@ -28,7 +29,13 @@ public class Client {
 					while ((serverMessage = in.readLine()) != null) {
 						System.out.println(serverMessage);
 					}
-				} catch (IOException e) {
+				}
+				
+				catch (SocketException e) {
+					// socket was closed
+				}
+				
+				catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -42,6 +49,11 @@ public class Client {
 		
 		while((msgToSend = reader.readLine())!= null) {
 			out.println(msgToSend);
+			
+			if(msgToSend.equals("sair")) {
+				stopConnection();
+				break;
+			}
 		}
 	}
 	
