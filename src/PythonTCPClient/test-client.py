@@ -23,21 +23,17 @@ lock = threading.Lock()
 def recv(sock):
     while True:
         try:
-            lock.acquire()
             data = sock.recv(1024)
             data = data.decode('ascii')
             print(data)
         except socket.error:
-            socket.close()
+            sock.close()
             break
-        finally:
-            lock.release()
 
 threading.Thread(target=recv, args=(sock,)).start()
 
 while True:
     msg = input()
-    lock.acquire()
 
     try:
         sock.send(msg.encode('ascii'))
@@ -47,7 +43,6 @@ while True:
         lock.release()
         break
 
-    lock.release()
-
     if(msg == "sair"):
         sock.close()
+        break
