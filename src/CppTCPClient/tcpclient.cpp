@@ -1,14 +1,19 @@
-#include <stdio.h> 
-#include <stdlib.h> 
-#include <string.h> 
-#include <netdb.h> 
-#include <sys/socket.h> 
-#include <pthread.h>
+#include <iostream>
+#include <cstdio>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <cstring>
+#include <thread>
+#include <stdlib.h>
 
 #define MAX 80 
-#define PORT 8080 
 
-void func(int sockfd) 
+using namespace std;
+
+int sockfd;
+
+void func() 
 { 
 	char buff[MAX]; 
 	int n; 
@@ -35,62 +40,32 @@ void func(int sockfd)
 
 } 
 
-void
-listen_server(int sockfd)
+
+
+void send_message()
 {
-	char buff[MAX]; 
-	do {
-		// clear buffer
-		bzero(buff, sizeof(buff)); 
-
-		// blocks until server send message
-		recv(sockfd, buff, sizeof(buff), 0); 
-
-		printf("From Server : %s\n", buff); 
-	} while ( (strncmp(buff, "exit", 4)) == 0 );
-}
-
-void
-create_listen_thread(int sockfd)
-{
-	//pthread_t thread;
-	//int rc;	
-
-	//rc = pthread_create(&thread, NULL, listen_server, (void *)&sockfd);
-}
-
-void *
-send_message(void *sockfd1)
-{
-	int *sockfd = (int *) sockfd1;
-	printf("opa %d\n", *sockfd);
 	char buff[MAX]; 
 	int n;
 	do {
 		// clear buffer
 		bzero(buff, sizeof(buff)); 
 
-		printf("Enter the string : "); 
 		n = 0; 
+
 		while ((buff[n++] = getchar()) != '\n'); 
 
-		send(*sockfd, buff, sizeof(buff), 0); 
+		send(sockfd, buff, sizeof(buff), 0); 
 
-	} while ( (strncmp(buff, "exit", 4)) == 0 );
+		cout << "I've sent the message.\n";
+
+	} while ( (strncmp(buff, "exit", 4)) != 0 );
 }
 
-int
-create_send_thread(int *sockfd)
-{
-	printf("Criando a send thread. sockfd=%d\n", *sockfd);
-	pthread_t thread;
-	return pthread_create(&thread, NULL, send_message, (void *)&sockfd);
-}
 
-int main() 
+int main(int argc, char** argv) 
 { 
-	int sockfd, connfd; 
-	struct sockaddr_in servaddr, cli; 
+	int PORT = atoi(argv[1]);
+	struct sockaddr_in servaddr; 
 
 	// socket create and varification 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0); 
@@ -120,11 +95,19 @@ int main()
 
 	// function for chat 
 
-	int *sockfdp = (int *) calloc(sizeof(int), 1);
-	*sockfdp = sockfd;
-	create_send_thread(sockfdp);
-	listen_server(sockfd);
-	//create_send_thread(sockfd);
+	std::thread t1 = std::thread(send_message);
+
+	char buff[MAX]; 
+	do {
+		// clear buffer
+		bzero(buff, sizeof(buff)); 
+
+		// blocks until server send message
+		recv(sockfd, buff, sizeof(buff), 0); 
+
+		printf("From Server : %s\n", buff); 
+	} while ( (strncmp(buff, "exit", 4)) == 0 );
+	cout << "SAÍ DO DO WHILE\n";
 
 	// close the socket 
 	close(sockfd); 
