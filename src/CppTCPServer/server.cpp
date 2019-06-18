@@ -9,7 +9,6 @@
 
 using namespace std;
 
-#define ADDRESS "127.0.0.1"
 #define MAX_CLIENTS 50
 #define CLIENT_MSG_SIZE 2000
 
@@ -69,11 +68,14 @@ void waitsForANewConnection(int serverSocket, unordered_map<Client, thread>& cli
 
 
 // Adapted from: https://dzone.com/articles/parallel-tcpip-socket-server-with-multi-threading
-int main(int argc, char** argv){
+int
+main (int argc, char** argv)
+{
     unordered_map<Client, thread> clientThreads;
     unordered_set<string> usedNames;
 
-    int port = atoi(argv[1]);
+	char *serverIPAddress = argv[1];
+    int port = atoi(argv[2]);
 
     // Result code from the socket's functions
     int resultCode;
@@ -85,7 +87,7 @@ int main(int argc, char** argv){
     struct sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(port);
-    serverAddress.sin_addr.s_addr = inet_addr(ADDRESS);
+    serverAddress.sin_addr.s_addr = inet_addr(serverIPAddress);
     memset(serverAddress.sin_zero, '\0', sizeof serverAddress.sin_zero);
 
     // Binds the server's address to its socket
