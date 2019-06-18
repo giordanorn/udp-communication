@@ -8,7 +8,6 @@
 using namespace std;
 
 #define MSG_MAX_SIZE 80
-#define SERVER_ADDR "127.0.0.1"
 
 void listenToServer(){
 
@@ -35,7 +34,7 @@ void sendMessages(int sock){
 
 int main(int argc, char** argv){
 
-    int serverPort = atoi(argv[1]);
+    int serverPort = atoi(argv[2]);
     // Result code of socket operations
     int resultCode;
 
@@ -46,7 +45,7 @@ int main(int argc, char** argv){
     struct sockaddr_in serverAddress; 
     bzero(&serverAddress, sizeof(serverAddress));  // Idk what's that's for
     serverAddress.sin_family = AF_INET; 
-    serverAddress.sin_addr.s_addr = inet_addr(SERVER_ADDR); 
+    serverAddress.sin_addr.s_addr = inet_addr(argv[1]); 
     serverAddress.sin_port = htons(serverPort); 
 
     // Connects the client socket to server socket 
