@@ -6,11 +6,19 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unordered_set>
+#include <unistd.h> // write()
+#include <mutex>
 
 using namespace std;
 
 #define MAX_CLIENTS 50
 #define CLIENT_MSG_SIZE 2000
+#define QUIT_MESSAGE "exit"
+
+
+unordered_set<int> sockets;
+int serverSocket;
 
 struct Client{
     u_short port;
@@ -28,24 +36,60 @@ namespace std {
     };
 }
 
-void listenToClient(int sock, Client client){
-    char clientMessage[CLIENT_MSG_SIZE];
-
-    while(true){
-        recv(sock , clientMessage , CLIENT_MSG_SIZE , 0);
-
-        cout << string(clientMessage) << endl;
+void sendToAlmostAll(int sockNotToSend, string msg){
+    for(int sock : sockets){
+        if(sock != sockNotToSend){
+            write(sock, msg.c_str(), sizeof(msg));
+        }
     }
 }
 
-void waitsForANewConnection(int serverSocket, unordered_map<Client, thread>& clientThreads){
+void sendToOne(int sock, string msg){
+    write(sock, msg.c_str(), sizeof(msg));
+}
+
+void listenToClient(int sock, Client client){
+    char buffer[CLIENT_MSG_SIZE];
+
+    // TODO: check if there's other client with the same name
+    // Receives the name of the client
+    read(sock , buffer , CLIENT_MSG_SIZE);
+    string clientName = string(buffer);
+
+    cout << clientName << " conectade na porta " << client.port << endl;
+    int bytesRead;
+    string msgReceived;
+    string msgToPrint;
+
+
+    while(true){
+        bytesRead = read(sock , buffer , CLIENT_MSG_SIZE);
+        string msgReceived = string(buffer, buffer + bytesRead/sizeof(char));
+
+        if(msgReceived != QUIT_MESSAGE){
+            cout << (clientName + " disse: " + msgReceived) << endl;
+
+            // TODO: this should be called in another thread
+            sendToAlmostAll(sock, clientName + " disse: " + msgReceived);
+        } else{
+            cout << (clientName + " saiu.") << endl;
+            sendToAlmostAll(sock, clientName + " saiu.");
+            sendToOne(sock, QUIT_MESSAGE);
+            sockets.erase(sock);
+            close(sock);
+            break;
+        }
+    }
+}
+
+void waitsForANewConnection(){
     // Address of the incoming client
     struct sockaddr_in clientAddress;
     unsigned int sizeClientAddress = sizeof clientAddress;
 
     // Waits for a new connection
-    cout << "Waiting for a new connection...\n";
     int socketToCommunicateWithClient = accept(serverSocket, (struct sockaddr*) &clientAddress, &sizeClientAddress);
+    sockets.insert(socketToCommunicateWithClient);
 
     // Gets the client's address in IPv4 notation
     char ipAddressAsCharArray[INET_ADDRSTRLEN];
@@ -55,15 +99,16 @@ void waitsForANewConnection(int serverSocket, unordered_map<Client, thread>& cli
     // Gets the client's port
     u_short port = clientAddress.sin_port;
 
+    // Prints stuff
+
+
     // Creates a new Client object. 
     Client client = {port, address};
 
     // Creates a thread for the new client
     thread threadClient;
     threadClient = thread(listenToClient, socketToCommunicateWithClient, client);
-
-    // Adds the thread in the map of threads
-    clientThreads[client] = move(threadClient);
+    threadClient.detach();
 }
 
 
@@ -71,7 +116,6 @@ void waitsForANewConnection(int serverSocket, unordered_map<Client, thread>& cli
 int
 main (int argc, char** argv)
 {
-    unordered_map<Client, thread> clientThreads;
     unordered_set<string> usedNames;
 
 	char *serverIPAddress = argv[1];
@@ -81,7 +125,7 @@ main (int argc, char** argv)
     int resultCode;
 
     // Creates the server's socket
-    int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 
     // Creates the server's address
     struct sockaddr_in serverAddress;
@@ -92,7 +136,7 @@ main (int argc, char** argv)
 
     // Binds the server's address to its socket
     if ((resultCode = bind(serverSocket, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) == 0)   {
-        cout << "Binding done.\n";
+        //cout << "Binding done.\n";
     }
 
     else {
@@ -102,7 +146,7 @@ main (int argc, char** argv)
 
     // Makes the server listen on the socket
     if ((resultCode = listen(serverSocket, MAX_CLIENTS))==0){
-        cout << "Listening on the socket." << endl;
+        //cout << "Listening on the socket." << endl;
     }
 
     else {
@@ -112,7 +156,7 @@ main (int argc, char** argv)
 
     while (true)
     {
-        waitsForANewConnection(serverSocket, clientThreads);
+        waitsForANewConnection();
     }
     
     return 0;

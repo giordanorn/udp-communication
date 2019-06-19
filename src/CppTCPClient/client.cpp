@@ -1,45 +1,71 @@
 #include <iostream>
+#include <mutex>
+#include <string>
+#include <condition_variable>
 #include <thread>
 #include <cstring>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h> // read()
 
 using namespace std;
 
 #define MSG_MAX_SIZE 80
+#define QUIT_MESSAGE "exit"
 
-void listenToServer(){
+int sock;
+bool amIListening = false;
+mutex mtx;
+condition_variable cv;
 
-}
-
-void sendMessages(int sock){
+void listenToServer(int sock){
+    amIListening = true;
     char buff[MSG_MAX_SIZE];
-    int n;
+    int res;
+    string msg;
 
-    do {
-        // clear buffer
-        bzero(buff, sizeof(buff)); 
+    while(true){
+        res = read(sock, buff, MSG_MAX_SIZE);
 
-        n = 0; 
+        if(res < 0) break;
 
-        while ((buff[n++] = getchar()) != '\n'); 
+        msg = string(buff);
 
-        // Removes the \n from the message that the client sent
-        buff[n-1] = '\0';
+        if (msg == QUIT_MESSAGE)
+            break;
 
-        send(sock, buff, sizeof(buff), 0); 
-    } while ( (strncmp(buff, "exit", 4)) != 0 );
+        cout << msg << endl;
+    }
 }
+
+
+void sendMessages(char* firstMsg){
+    send(sock, firstMsg, (strlen(firstMsg)+1) * sizeof(char), 0); 
+    string msg;
+    
+    do {
+        getline(cin,msg);
+        send(sock, msg.c_str(), msg.size(), 0); 
+    } while ( QUIT_MESSAGE != msg);
+
+    // cout << "parei de mandar tb\n";
+}
+
+
 
 int main(int argc, char** argv){
+    if(argc != 4){
+        cout << "You're missing/putting too many params.\n";
+        exit(0);
+    }
 
     int serverPort = atoi(argv[2]);
     // Result code of socket operations
     int resultCode;
 
     // Creates a new socket
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    sock = socket(AF_INET, SOCK_STREAM, 0);
 
     // Server's address
     struct sockaddr_in serverAddress; 
@@ -53,14 +79,22 @@ int main(int argc, char** argv){
         cout << "ERROR: connection with the server failed." << strerror(resultCode) << endl;   
         exit(0); 
     } else{
-        cout << "Connected to the server." << endl; 
+        cout << "Conectade ao servidor " << argv[1] << " na porta " << argv[2] <<  endl; 
     }
 
     // Listens to the server messages in a separate thread
-    thread threadListenToServer = thread(listenToServer);
+    thread threadListenToServer = thread(listenToServer, sock);
+    thread threadSendMessages = thread(sendMessages, argv[3]);
 
-    // Sends messages to the server
-    sendMessages(sock);
+    threadListenToServer.join();
+    threadSendMessages.join();    
+
+    // unique_lock<mutex> lk(mtx);
+    // cout << "to na baerrreira\n";
+
+    // cv.wait(lk, []{return amIListening;});
+
+    close(sock);
 
     return 0;
 }
