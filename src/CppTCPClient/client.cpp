@@ -12,7 +12,7 @@
 using namespace std;
 
 #define MSG_MAX_SIZE 80
-#define QUIT_MESSAGE "exit"
+#define QUIT_MESSAGE "sair"
 
 int sock;
 bool amIListening = false;

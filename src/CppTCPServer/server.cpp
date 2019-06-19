@@ -14,7 +14,7 @@ using namespace std;
 
 #define MAX_CLIENTS 50
 #define CLIENT_MSG_SIZE 2000
-#define QUIT_MESSAGE "exit"
+#define QUIT_MESSAGE "sair"
 
 
 unordered_set<int> sockets;
