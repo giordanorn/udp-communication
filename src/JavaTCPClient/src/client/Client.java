@@ -12,12 +12,16 @@ public class Client {
 	private Socket clientSocket;
 	private PrintWriter out;
 	private BufferedReader in;
+	private String ipServer;
+	private int portServer;
 	
 	public Client(String ipServer, int portServer, String name) throws IOException {
 		clientSocket = new Socket(ipServer, portServer);
 		out = new PrintWriter(clientSocket.getOutputStream(), true);
 		in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		this.name = name;
+		this.ipServer = ipServer;
+		this.portServer = portServer;
 	}
 	
 	public void init() throws IOException {
@@ -43,6 +47,7 @@ public class Client {
 			}
 		}.start();
 
+		System.out.println("Conectado ao servidor " + ipServer + " na porta " + portServer);
 		out.println(name);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		String msgToSend;

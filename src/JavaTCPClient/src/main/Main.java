@@ -6,7 +6,7 @@ import client.Client;
 
 public class Main {
 	public static void printHelp() {
-		System.out.println("usage: java -jar server.jar <server_address> <server_port> <your_nickname>");
+		System.out.println("usage: java -jar client.jar <server_address> <server_port> <your_nickname>");
 		
 	}
 	
