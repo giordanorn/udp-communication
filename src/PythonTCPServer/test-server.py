@@ -39,8 +39,9 @@ class ClientConn:
 
                 else:
                     self.name = decoded_msg
+                    print(self.name + " conectado na porta " + str(self.conn.getpeername()[1]))
                     lock.acquire()
-                    self.server.send_to_almost_all(self.name + " entrou na sala", self.addr)
+                    # self.server.send_to_almost_all(self.name + " entrou na sala", self.addr)
                     lock.release()
 
             elif decoded_msg == 'sair':
@@ -48,9 +49,11 @@ class ClientConn:
                 break
 
             else:
-                self.server.send_to_almost_all(self.name + " disse: " + decoded_msg, None)                
+                print(self.name + " disse: " + decoded_msg)
+                self.server.send_to_almost_all(self.name + " disse: " + decoded_msg, self.addr)                
 
     def exit(self):
+        print(self.name + " saiu da sala")
         lock.acquire()
         self.server.remove_client(self.addr)
         self.server.send_to_almost_all(self.name + " saiu da sala", self.addr)                

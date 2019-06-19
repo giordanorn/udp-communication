@@ -17,6 +17,7 @@ port = args.port
 
 sock.connect((host, port)) 
 sock.send(args.nick.encode('ascii'))
+print("Conectado ao servidor " + str(host) + " na porta " + str(port))
 
 lock = threading.Lock()
 
