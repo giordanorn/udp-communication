@@ -18,7 +18,7 @@ class ClientConn:
         t.start()
 
     def send_message(self, msg):
-        self.conn.sendall(msg.encode('ascii'))
+        self.conn.sendall(msg.encode('utf8'))
 
     def is_name_valid(self, name):
         return not (not name)
@@ -31,7 +31,7 @@ class ClientConn:
                 self.exit()
                 break
 
-            decoded_msg = msg.decode('ascii')
+            decoded_msg = msg.decode('utf8')
 
             if not self.name:
                 if not self.is_name_valid(decoded_msg):

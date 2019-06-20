@@ -16,7 +16,7 @@ host = args.server_address
 port = args.port
 
 sock.connect((host, port)) 
-sock.send(args.nick.encode('ascii'))
+sock.send(args.nick.encode('utf8'))
 print("Conectado ao servidor " + str(host) + " na porta " + str(port))
 
 lock = threading.Lock()
@@ -25,7 +25,7 @@ def recv(sock):
     while True:
         try:
             data = sock.recv(1024)
-            data = data.decode('ascii')
+            data = data.decode('utf8')
             print(data)
         except socket.error:
             sock.close()
@@ -37,7 +37,7 @@ while True:
     msg = input()
 
     try:
-        sock.send(msg.encode('ascii'))
+        sock.send(msg.encode('utf8'))
 
     except socket.error:
         sock.close()
